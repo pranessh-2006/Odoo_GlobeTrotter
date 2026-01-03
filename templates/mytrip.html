@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<title>My Trips - GlobeTrotter</title>
+	<link href="https://fonts.googleapis.com" rel="preconnect" />
+	<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+		rel="stylesheet" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+		rel="stylesheet" />
+	<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+	<script id="tailwind-config">
+		tailwind.config = {
+			darkMode: "class",
+			theme: {
+				extend: {
+					colors: {
+						"primary": "#667eea",
+						"secondary": "#764ba2",
+						"background-light": "#f5f7f8",
+						"background-dark": "#101922",
+					},
+					fontFamily: {
+						"display": ["Plus Jakarta Sans", "sans-serif"]
+					},
+					borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+					animation: {
+						'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+						'subtle-pulse': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+						'float': 'float 20s infinite linear',
+						'slide-in': 'slideIn 0.3s ease-out forwards',
+					},
+					keyframes: {
+						fadeInUp: {
+							'0%': {opacity: '0', transform: 'translateY(20px)'},
+							'100%': {opacity: '1', transform: 'translateY(0)'},
+						},
+						float: {
+							'0%, 100%': {transform: 'translateY(0) translateX(0)'},
+							'25%': {transform: 'translateY(-10px) translateX(10px)'},
+							'50%': {transform: 'translateY(-20px) translateX(-10px)'},
+							'75%': {transform: 'translateY(-10px) translateX(10px)'},
+						}
+					}
+				},
+			},
+		}
+	</script>
+	<style>
+		.material-symbols-outlined {
+			font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+		}
+
+		.no-scrollbar::-webkit-scrollbar {
+			display: none;
+		}
+
+		.no-scrollbar {
+			-ms-overflow-style: none;
+			scrollbar-width: none;
+		}
+
+		/* Custom GlobeTrotter Background */
+		body {
+			background:
+				linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+				url('https://cdn.wallpapersafari.com/31/68/BIp53j.jpg');
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+			min-height: 100vh;
+			color: white;
+		}
+
+		/* Floating Particles */
+		.floating-particles {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		.particle {
+			position: absolute;
+			width: 3px;
+			height: 3px;
+			background: rgba(240, 240, 240, 0.5);
+			border-radius: 50%;
+			animation: float 15s infinite;
+		}
+
+		/* Glass Effect */
+		.glass-effect {
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+		}
+
+		.glass-card {
+			background: rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(15px);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+		}
+
+		/* Gradient Text */
+		.gradient-text {
+			background: linear-gradient(45deg, #fff, #f0f0f0);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		/* Custom Scrollbar */
+		.custom-scrollbar::-webkit-scrollbar {
+			width: 6px;
+			height: 6px;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-track {
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 10px;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-thumb {
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			border-radius: 10px;
+		}
+
+		/* Animation for dashboard switching */
+		.dashboard-content {
+			transition: opacity 0.3s ease;
+		}
+
+		.dashboard-hidden {
+			display: none;
+			opacity: 0;
+		}
+
+		.dashboard-visible {
+			display: block;
+			opacity: 1;
+		}
+
+		/* Trip Status Colors */
+		.status-upcoming {
+			background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+			color: #667eea;
+			border: 1px solid rgba(102, 126, 234, 0.3);
+		}
+
+		.status-draft {
+			background: linear-gradient(135deg, rgba(156, 163, 175, 0.2), rgba(107, 114, 128, 0.2));
+			color: #9ca3af;
+			border: 1px solid rgba(156, 163, 175, 0.3);
+		}
+
+		.status-completed {
+			background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.2));
+			color: #22c55e;
+			border: 1px solid rgba(34, 197, 94, 0.3);
+		}
+
+		/* Hover Effects */
+		.hover-lift {
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.hover-lift:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+		}
+	</style>
+</head>
+
+<body>
+	{% macro render_trip_card(trip) %}
+	<div onclick="window.location.href='{{ url_for('itinerary_builder', trip_id=trip.id) }}'"
+		class="group flex flex-col glass-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
+
+		<div class="relative h-56 w-full overflow-hidden">
+			<div class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 group-hover:scale-110"
+				style="background-image: url('{{ url_for('static', filename=trip.cover_photo) if trip.cover_photo else 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop' }}');">
+				<div
+					class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300">
+				</div>
+			</div>
+
+			<div class="absolute top-4 left-4 z-20">
+				<span
+					class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider shadow-lg {{ trip.ui_class }}">
+					<span class="material-symbols-outlined text-[14px]">{{ trip.ui_icon }}</span>
+					{{ trip.ui_status }}
+				</span>
+			</div>
+
+			<div
+				class="absolute bottom-4 left-4 right-4 z-20 group-hover:translate-y-[-8px] transition-transform duration-300">
+				<h3 class="text-white text-2xl font-bold leading-tight drop-shadow-md">{{ trip.name }}</h3>
+				<div class="flex items-center gap-2 text-white/90 text-sm mt-1 font-medium">
+					<span class="material-symbols-outlined text-[16px]">location_on</span>
+					<span>{{ trip.itineraries|length }} Stops</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="p-5 flex flex-col gap-4 flex-1">
+			<div class="grid grid-cols-2 gap-4">
+				<div class="flex flex-col gap-1 p-2.5 rounded-lg glass-card">
+					<div class="flex items-center gap-1.5 text-white font-medium">
+						<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+						<span class="text-xs font-semibold">{{ trip.start_date }}</span>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1 p-2.5 rounded-lg glass-card">
+					<div class="flex items-center gap-1.5 text-white font-medium">
+						<span class="material-symbols-outlined text-[16px] text-primary">schedule</span>
+						<span class="text-xs font-semibold">{{ trip.days_count }} Days</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="mt-auto space-y-3">
+				<div class="flex items-center justify-between text-xs text-gray-400 pt-3 border-t border-white/10">
+					<span>Cost: <span class="text-white font-semibold">${{ "%.2f"|format(trip.calculated_cost)
+							}}</span></span>
+					<span class="flex items-center gap-1">
+						<span class="material-symbols-outlined text-[14px]">payments</span>
+						Budget: ${{ "%.0f"|format(trip.budget_limit) }}
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endmacro %}
+	<!-- Floating Particles -->
+	<div class="floating-particles" id="particles"></div>
+
+	<!-- Main Container -->
+	<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden z-10">
+		<!-- Header -->
+		<header class="sticky top-0 z-50 glass-effect border-b border-white/10 shadow-lg">
+			<div class="px-6 lg:px-10 py-4">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-4 text-white cursor-pointer group"
+						onclick="window.location.href='/'">
+						<div
+							class="size-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+							<span class="material-symbols-outlined text-white text-2xl">
+								flight
+							</span>
+						</div>
+						<div>
+							<h2 class="text-2xl font-black gradient-text">GlobeTrotter</h2>
+							<p class="text-xs text-gray-300">Your Travel Companion</p>
+						</div>
+					</div>
+
+					<nav class="hidden md:flex items-center gap-8">
+						<a class="text-sm font-semibold hover:text-primary transition-colors flex items-center gap-2"
+							href="/">
+							<span class="material-symbols-outlined text-lg">home</span>
+							Home
+						</a>
+						<a class="text-sm font-bold text-primary flex items-center gap-2" href="#">
+							<span class="material-symbols-outlined text-lg">luggage</span>
+							My Trips
+						</a>
+
+						<a class="text-sm font-bold text-primary flex items-center gap-2"
+							href="{{ url_for('my_trips') }}">
+							<a class="text-sm font-semibold hover:text-primary transition-colors flex items-center gap-2"
+								href="#">
+								<span class="material-symbols-outlined text-lg">explore</span>
+								Explore
+							</a>
+							<a class="text-sm font-semibold hover:text-primary transition-colors flex items-center gap-2"
+								href="#">
+								<span class="material-symbols-outlined text-lg">forum</span>
+								Community
+							</a>
+					</nav>
+
+					<div class="flex items-center gap-4">
+						<div class="hidden lg:flex items-center gap-3">
+							<div class="relative group">
+								<div
+									class="flex w-full flex-1 items-stretch rounded-lg h-10 border border-white/20 focus-within:border-primary overflow-hidden transition-colors shadow-sm hover:shadow-md transition-shadow">
+									<div class="text-gray-300 flex glass-effect items-center justify-center pl-3">
+										<span class="material-symbols-outlined text-[20px]">search</span>
+									</div>
+									<input
+										class="form-input flex w-full min-w-0 flex-1 resize-none rounded-none text-white focus:outline-0 focus:ring-0 border-none glass-effect h-full placeholder:text-gray-400 px-2 text-sm font-normal leading-normal"
+										placeholder="Search trips..." value="" />
+								</div>
+							</div>
+						</div>
+
+						<div class="flex items-center gap-4">
+							<a href="/login"
+								class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all font-semibold text-sm">
+								Login
+							</a>
+							<a href="/signup"
+								class="px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-all font-semibold text-sm shadow-lg">
+								Sign Up
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<!-- Main Content -->
+		<main class="flex-1">
+			<!-- Hero Banner -->
+			<section class="relative overflow-hidden">
+				<div class="relative w-full h-[280px] md:h-[340px] overflow-hidden group">
+					<div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
+					<div
+						class="absolute inset-0 bg-gradient-to-tr from-primary/30 to-secondary/30 mix-blend-overlay animate-subtle-pulse z-0">
+					</div>
+					<div
+						class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-pulse z-0">
+					</div>
+
+					<div
+						class="relative z-20 h-full max-w-[1200px] mx-auto flex flex-col justify-center px-6 md:px-10 lg:px-40 pb-8 pt-12">
+						<div class="flex flex-wrap justify-between items-end gap-6">
+							<div class="max-w-2xl text-white animate-fade-in-up">
+								<div
+									class="inline-flex items-center gap-2 px-3 py-1 mb-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 hover:bg-white/20 transition-colors cursor-default">
+									<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+									<span class="text-xs font-semibold tracking-wide uppercase">Your Journey
+										Collection</span>
+								</div>
+								<h1
+									class="text-4xl md:text-5xl font-black leading-tight tracking-tight mb-3 drop-shadow-lg gradient-text">
+									My Travel Adventures
+								</h1>
+								<p class="text-lg text-gray-200 font-medium max-w-md drop-shadow-md">
+									All your trips in one place. Manage, edit, and relive your travel memories.
+								</p>
+							</div>
+							<button onclick="showCreateTripModal()"
+								class="hidden md:flex min-w-[160px] h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 active:scale-95 transition-all text-white font-bold shadow-xl shadow-primary/20 ring-4 ring-white/10 hover:ring-white/20">
+								<span class="material-symbols-outlined text-[24px]">add_circle</span>
+								<span>New Trip</span>
+							</button>
+						</div>
+					</div>
+					<button onclick="showCreateTripModal()"
+						class="md:hidden absolute bottom-[-24px] right-6 z-30 flex size-14 items-center justify-center rounded-full bg-gradient-to-r from-primary to-secondary text-white shadow-xl shadow-primary/40 active:scale-90 transition-transform">
+						<span class="material-symbols-outlined text-[28px]">add</span>
+					</button>
+				</div>
+			</section>
+
+			<!-- Dashboard Content -->
+			<section class="px-6 md:px-10 lg:px-40 py-10">
+				<div class="max-w-[1200px] mx-auto">
+					<!-- Dashboard Tabs -->
+					<div
+						class="sticky top-[72px] z-30 glass-effect backdrop-blur-md py-4 px-6 rounded-2xl mb-8 shadow-lg">
+						<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+							<div
+								class="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 no-scrollbar items-center">
+								<span
+									class="text-xs font-bold text-gray-400 uppercase mr-2 hidden sm:block">Filter:</span>
+								<button onclick="showTab('all')" id="tab-all"
+									class="group relative flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-md">
+									<span class="text-sm">All Trips</span>
+									<span class="bg-white/20 text-[11px] px-1.5 py-0.5 rounded-full ml-1">12</span>
+								</button>
+								<button onclick="showTab('upcoming')" id="tab-upcoming"
+									class="group flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full glass-card text-gray-300 px-5 hover:bg-white/10 transition-all active:scale-95">
+									<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+									<span class="text-sm font-medium">Upcoming</span>
+									<span class="text-xs bg-white/10 px-1.5 py-0.5 rounded-full ml-1">5</span>
+								</button>
+								<button onclick="showTab('drafts')" id="tab-drafts"
+									class="group flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full glass-card text-gray-300 px-5 hover:bg-white/10 transition-all active:scale-95">
+									<span class="w-2 h-2 rounded-full bg-gray-400"></span>
+									<span class="text-sm font-medium">Drafts</span>
+									<span class="text-xs bg-white/10 px-1.5 py-0.5 rounded-full ml-1">2</span>
+								</button>
+								<button onclick="showTab('completed')" id="tab-completed"
+									class="group flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full glass-card text-gray-300 px-5 hover:bg-white/10 transition-all active:scale-95">
+									<span class="w-2 h-2 rounded-full bg-green-500"></span>
+									<span class="text-sm font-medium">Completed</span>
+									<span class="text-xs bg-white/10 px-1.5 py-0.5 rounded-full ml-1">5</span>
+								</button>
+							</div>
+
+							<div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+								<div class="flex items-center gap-3">
+									<div class="relative group">
+										<button
+											class="flex items-center gap-2 h-10 px-4 rounded-lg glass-card text-gray-300 hover:bg-white/10 hover:border-primary/50 transition-colors shadow-sm whitespace-nowrap">
+											<span class="material-symbols-outlined text-[18px]">filter_list</span>
+											<span class="text-sm font-semibold">Destinations</span>
+											<span
+												class="text-xs bg-white/10 px-1.5 rounded font-bold text-gray-400">Any</span>
+										</button>
+									</div>
+									<div class="relative group">
+										<button
+											class="flex items-center gap-2 h-10 px-4 rounded-lg glass-card text-gray-300 hover:bg-white/10 hover:border-primary/50 transition-colors shadow-sm whitespace-nowrap">
+											<span class="material-symbols-outlined text-[18px]">sort</span>
+											<span class="text-sm font-semibold">Sort: Date</span>
+											<span class="material-symbols-outlined text-[16px]">expand_more</span>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Trip Statistics -->
+					<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+						<div class="glass-card rounded-2xl p-6 hover-lift">
+							<div class="flex items-center justify-between mb-4">
+								<div>
+									<p class="text-gray-400 text-sm">Total Trips</p>
+									<h3 class="text-3xl font-bold gradient-text">{{ trips|length }}</h3>
+								</div>
+								<div
+									class="size-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+									<span class="material-symbols-outlined text-2xl text-primary">luggage</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="glass-card rounded-2xl p-6 hover-lift">
+							<div class="flex items-center justify-between mb-4">
+								<div>
+									<p class="text-gray-400 text-sm">Countries Visited</p>
+									<h3 class="text-3xl font-bold gradient-text">{{ countries_count }}</h3>
+								</div>
+								<div
+									class="size-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+									<span class="material-symbols-outlined text-2xl text-blue-400">public</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="glass-card rounded-2xl p-6 hover-lift">
+							<div class="flex items-center justify-between mb-4">
+								<div>
+									<p class="text-gray-400 text-sm">Total Spent</p>
+									<h3 class="text-3xl font-bold gradient-text">${{ "%.2f"|format(total_spent) }}</h3>
+								</div>
+								<div
+									class="size-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center">
+									<span class="material-symbols-outlined text-2xl text-emerald-400">savings</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Trip Grid - All Trips -->
+					<div id="dashboard-all" class="dashboard-content dashboard-visible">
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+							{% for trip in trips %}
+							{{ render_trip_card(trip) }}
+							{% else %}
+							<p class="text-gray-400 col-span-3 text-center py-10">No trips found. Create one to get
+								started!</p>
+							{% endfor %}
+
+							<div class="group flex flex-col items-center justify-center glass-card border-2 border-dashed border-gray-400/30 rounded-2xl overflow-hidden min-h-[460px] hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer p-8 text-center gap-6"
+								onclick="showCreateTripModal()">
+								<div class="relative">
+									<div
+										class="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+									</div>
+									<div
+										class="relative size-20 rounded-full bg-white/5 border border-gray-400/30 group-hover:border-primary group-hover:text-primary flex items-center justify-center transition-all shadow-sm group-hover:shadow-md transform group-hover:scale-110 duration-300">
+										<span
+											class="material-symbols-outlined text-[40px] text-gray-400 group-hover:text-primary transition-colors">add</span>
+									</div>
+								</div>
+								<div>
+									<h3
+										class="text-white text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+										Create a new trip</h3>
+									<p class="text-gray-400 text-sm max-w-[220px] mx-auto leading-relaxed">Ready for
+										your next adventure?</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div id="dashboard-upcoming" class="dashboard-content dashboard-hidden">
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+							{% for trip in upcoming %}
+							{{ render_trip_card(trip) }}
+							{% else %}
+							<p class="text-gray-400 col-span-3 text-center py-10">No upcoming trips.</p>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div id="dashboard-drafts" class="dashboard-content dashboard-hidden">
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+							{% for trip in drafts %}
+							{{ render_trip_card(trip) }}
+							{% else %}
+							<p class="text-gray-400 col-span-3 text-center py-10">No drafts (trips without stops).</p>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div id="dashboard-completed" class="dashboard-content dashboard-hidden">
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+							{% for trip in completed %}
+							{{ render_trip_card(trip) }}
+							{% else %}
+							<p class="text-gray-400 col-span-3 text-center py-10">No completed trips yet.</p>
+							{% endfor %}
+						</div>
+					</div>
+					<!-- Load More Section -->
+					<div class="flex flex-col items-center justify-center py-12 gap-4">
+						<div class="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+						<button
+							class="group flex items-center gap-2 px-8 py-3 rounded-full glass-card text-sm font-bold hover:bg-white/10 transition-all shadow-sm text-gray-300 active:scale-95">
+							<span class="material-symbols-outlined text-[20px] group-hover:animate-spin">refresh</span>
+							<span>Load more trips</span>
+						</button>
+						<p class="text-xs text-gray-400">Showing 6 of 12 trips</p>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<!-- Create Trip Modal -->
+	<div id="createTripModal"
+		class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+		<div class="glass-effect rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+			id="modalContent">
+			<div class="flex justify-between items-center mb-6">
+				<h3 class="text-2xl font-bold gradient-text">Plan New Trip</h3>
+				<button onclick="hideCreateTripModal()" class="text-gray-400 hover:text-white transition-colors">
+					<span class="material-symbols-outlined">close</span>
+				</button>
+			</div>
+			<div class="space-y-4">
+				<div>
+					<label class="block text-sm font-medium text-gray-300 mb-2">Trip Name</label>
+					<input type="text"
+						class="w-full glass-card rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="e.g., Summer Europe Tour">
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-300 mb-2">Destination</label>
+					<input type="text"
+						class="w-full glass-card rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="e.g., Paris, France">
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-300 mb-2">Start Date</label>
+						<input type="date"
+							class="w-full glass-card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-300 mb-2">End Date</label>
+						<input type="date"
+							class="w-full glass-card rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary">
+					</div>
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-300 mb-2">Estimated Budget (₹)</label>
+					<input type="number"
+						class="w-full glass-card rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+						placeholder="e.g., 50000">
+				</div>
+			</div>
+			<div class="mt-8 flex gap-4">
+				<button onclick="hideCreateTripModal()"
+					class="flex-1 py-3 rounded-lg glass-card text-gray-300 hover:bg-white/10 transition-colors">
+					Cancel
+				</button>
+				<button
+					class="flex-1 py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold hover:opacity-90 transition-all">
+					Create Trip
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Create floating particles
+		const particlesContainer = document.getElementById('particles');
+		for (let i = 0; i < 50; i++) {
+			const particle = document.createElement('div');
+			particle.className = 'particle';
+			particle.style.left = Math.random() * 100 + '%';
+			particle.style.top = Math.random() * 100 + '%';
+			particle.style.animationDelay = Math.random() * 15 + 's';
+			particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+			particlesContainer.appendChild(particle);
+		}
+
+		// Dashboard tab switching
+		function showTab(tabName) {
+			// Hide all dashboards
+			document.querySelectorAll('.dashboard-content').forEach(dash => {
+				dash.classList.add('dashboard-hidden');
+				dash.classList.remove('dashboard-visible');
+			});
+
+			// Show selected dashboard
+			const selectedDash = document.getElementById(`dashboard-${tabName}`);
+			selectedDash.classList.remove('dashboard-hidden');
+			selectedDash.classList.add('dashboard-visible');
+
+			// Update active tab button
+			document.querySelectorAll('[onclick^="showTab"]').forEach(btn => {
+				btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-secondary', 'text-white');
+				btn.classList.add('glass-card', 'text-gray-300');
+			});
+
+			const activeBtn = document.getElementById(`tab-${tabName}`);
+			activeBtn.classList.remove('glass-card', 'text-gray-300');
+			activeBtn.classList.add('bg-gradient-to-r', 'from-primary', 'to-secondary', 'text-white');
+		}
+
+		// Create Trip Modal
+		function showCreateTripModal() {
+			const modal = document.getElementById('createTripModal');
+			const content = document.getElementById('modalContent');
+			modal.classList.remove('hidden');
+			setTimeout(() => {
+				modal.classList.add('flex');
+				content.classList.remove('scale-95', 'opacity-0');
+				content.classList.add('scale-100', 'opacity-100');
+			}, 10);
+		}
+
+		function hideCreateTripModal() {
+			const modal = document.getElementById('createTripModal');
+			const content = document.getElementById('modalContent');
+			content.classList.remove('scale-100', 'opacity-100');
+			content.classList.add('scale-95', 'opacity-0');
+			setTimeout(() => {
+				modal.classList.remove('flex');
+				modal.classList.add('hidden');
+			}, 300);
+		}
+
+		// Close modal when clicking outside
+		document.getElementById('createTripModal').addEventListener('click', function (e) {
+			if (e.target === this) {
+				hideCreateTripModal();
+			}
+		});
+
+		// Trip card click functionality
+
+		// Load more trips
+		document.querySelector('button:contains("Load more trips")').addEventListener('click', function () {
+			alert('Loading more trips...');
+			setTimeout(() => {
+				alert('No more trips to load.');
+			}, 1000);
+		});
+
+		// Initialize first tab
+		document.addEventListener('DOMContentLoaded', () => {
+			showTab('all');
+		});
+	</script>
+</body>
+
+</html>

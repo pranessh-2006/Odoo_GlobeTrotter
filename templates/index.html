@@ -848,12 +848,14 @@
 			GlobeTrotter
 		</div>
 		<nav class="nav-links">
-			<a href="#"><i class="fas fa-home"></i> Home</a>
-			<a href="#"><i class="fas fa-plane"></i> My Trips</a>
-			<a href="#"><i class="fas fa-compass"></i> Explore</a>
-			<a href="#"><i class="fas fa-wallet"></i> Budget</a>
-			<a href="#"><i class="fas fa-heart"></i> Favorites</a>
-			<a href="#"><i class="fas fa-question-circle"></i> Support</a>
+			<a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+
+			<a href="{{ url_for('my_trips') }}"><i class="fas fa-plane"></i> My Trips</a>
+
+			<a href="#explore"><i class="fas fa-compass"></i> Explore</a>
+			<a href="#budget"><i class="fas fa-wallet"></i> Budget</a>
+			<a href="#favorites"><i class="fas fa-heart"></i> Favorites</a>
+			<a href="#support"><i class="fas fa-question-circle"></i> Support</a>
 		</nav>
 		<div class="auth-buttons">
 			{% if current_user.is_authenticated %}
@@ -905,10 +907,10 @@
 			</div>
 
 			<div class="cta-buttons">
-				<button class="btn-primary">
+				<a href="{{ url_for('create_trip') }}" class="btn-primary" style="text-decoration: none;">
 					<i class="fas fa-plus-circle"></i>
 					Plan New Trip
-				</button>
+				</a>
 				<button class="btn-secondary">
 					<i class="fas fa-play-circle"></i>
 					Watch Tour Video
@@ -938,7 +940,7 @@
 									}} Days</p>
 							</div>
 							<div class="trip-price">
-								<div style="font-size: 24px; font-weight: 700; color: #4CD964;">${{
+								<div style="font-size: 24px; font-weight: 700; color: #4CD964;">₹{{
 									"%.0f"|format(trip.budget_limit) }}</div>
 							</div>
 						</div>
@@ -1165,7 +1167,7 @@
 				<h3>Quick Links</h3>
 				<ul class="footer-links">
 					<li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
-					<li><a href="#"><i class="fas fa-chevron-right"></i> My Trips</a></li>
+					<li><a href="{{ url_for('my_trips') }}"><i class="fas fa-plane"></i> My Trips</a></li>
 					<li><a href="#"><i class="fas fa-chevron-right"></i> Explore Destinations</a></li>
 					<li><a href="#"><i class="fas fa-chevron-right"></i> Travel Guides</a></li>
 					<li><a href="#"><i class="fas fa-chevron-right"></i> Special Offers</a></li>
@@ -1244,14 +1246,6 @@
 			observer.observe(element);
 		});
 
-		// Interactive elements
-		document.querySelectorAll('.btn-primary').forEach(btn => {
-			if (btn.textContent.includes('Plan New Trip')) {
-				btn.addEventListener('click', () => {
-					alert('Redirecting to trip planner...');
-				});
-			}
-		});
 
 		document.querySelectorAll('.btn-secondary').forEach(btn => {
 			if (btn.textContent.includes('Watch Tour')) {
@@ -1261,12 +1255,6 @@
 			}
 		});
 
-		document.querySelectorAll('.trip-card').forEach(card => {
-			card.addEventListener('click', function () {
-				const tripName = this.querySelector('.trip-title').textContent;
-				alert(`Viewing details for: ${tripName}`);
-			});
-		});
 
 		document.querySelectorAll('.destination-card').forEach(card => {
 			card.addEventListener('click', function () {
@@ -1289,16 +1277,23 @@
 		// Smooth scrolling for navigation
 		document.querySelectorAll('.nav-links a').forEach(anchor => {
 			anchor.addEventListener('click', function (e) {
-				e.preventDefault();
 				const href = this.getAttribute('href');
-				if (href === '#') {
-					window.scrollTo({top: 0, behavior: 'smooth'});
-				} else if (href.startsWith('#')) {
-					const element = document.querySelector(href);
-					if (element) {
-						element.scrollIntoView({behavior: 'smooth'});
+
+				// CHECK: Only intercept if it is a hash link (starts with #)
+				if (href.startsWith('#')) {
+					e.preventDefault(); // Stop default only for # links
+
+					if (href === '#') {
+						window.scrollTo({top: 0, behavior: 'smooth'});
+					} else {
+						const element = document.querySelector(href);
+						if (element) {
+							element.scrollIntoView({behavior: 'smooth'});
+						}
 					}
 				}
+				// If it's a real link (like /my-trips), do nothing here.
+				// The browser will handle the navigation normally.
 			});
 		});
 	</script>

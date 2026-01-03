@@ -400,16 +400,21 @@ def search_city():
         print(e)
         return jsonify({"error": str(e)}), 500
 
-
 @app.route('/api/add-activity/<int:itinerary_id>', methods=['POST'])
 @login_required
 def add_activity(itinerary_id):
     try:
-        # ... setup code ...
+        # 1. Fetch Itinerary (THIS IS THE MISSING LINE)
+        itinerary = Itinerary.query.get_or_404(itinerary_id)
         
+        # 2. Security Check
+        trip = Trip.query.get(itinerary.trip_id)
+        if trip.user_id != current_user.id:
+            return jsonify({"error": "Unauthorized"}), 403
+
         data = request.json
         
-        # 1. Handle Date (YYYY-MM-DD -> Python Date)
+        # 3. Handle Date (YYYY-MM-DD -> Python Date)
         date_obj = None
         if data.get('activity_date'):
             try:
@@ -417,18 +422,31 @@ def add_activity(itinerary_id):
             except ValueError:
                 pass 
 
-        # ... existing Time handling ...
-        # ... existing Cost handling ...
+        # 4. Handle Time & Cost Safely
+        time_obj = None
+        if data.get('start_time'):
+            try:
+                time_obj = datetime.strptime(data.get('start_time'), '%H:%M').time()
+            except ValueError:
+                pass
 
-        # 2. Create Activity with the new date
+        try:
+            cost_val = float(data.get('cost', 0))
+        except ValueError:
+            cost_val = 0.0
+
+        try:
+            duration_val = int(data.get('duration', 0)) if data.get('duration') else None
+        except ValueError:
+            duration_val = None
+
+        # 5. Create Activity
         new_activity = Activity(
-            itinerary_id=itinerary.id,
+            itinerary_id=itinerary.id,  # This works now because 'itinerary' is defined above
             title=data.get('title'),
             category=data.get('category'),
             cost=cost_val,
-            
-            activity_date=date_obj,  # <--- Save the date here
-            
+            activity_date=date_obj,     # Saving the date
             duration_minutes=duration_val,
             start_time=time_obj
         )
@@ -441,7 +459,66 @@ def add_activity(itinerary_id):
     except Exception as e:
         print(f"ERROR: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/my-trips')
+@login_required
+def my_trips():
+    # 1. Fetch all trips for user
+    all_trips = Trip.query.filter_by(user_id=current_user.id).order_by(Trip.start_date.desc()).all()
     
-    return jsonify({"message": "Activity added", "id": new_activity.id})
+    # 2. Initialize Buckets & Stats
+    upcoming = []
+    completed = []
+    drafts = []
+    
+    total_spent = 0
+    unique_countries = set()
+    today = datetime.now().date()
+    
+    for trip in all_trips:
+        # A. Calculate Trip Cost & Collect Countries
+        trip_cost = 0
+        stop_count = len(trip.itineraries)
+        
+        for stop in trip.itineraries:
+            if stop.country_name:
+                unique_countries.add(stop.country_name)
+            for act in stop.activities:
+                trip_cost += (act.cost or 0)
+        
+        total_spent += trip_cost
+        
+        # B. Attach dynamic properties to the trip object (for the HTML to use)
+        trip.calculated_cost = trip_cost
+        trip.days_count = (trip.end_date - trip.start_date).days
+        
+        # C. Categorize
+        if stop_count == 0:
+            # If no stops added yet, treat as Draft
+            drafts.append(trip)
+            trip.ui_status = 'Draft'
+            trip.ui_class = 'status-draft' 
+            trip.ui_icon = 'edit_note'
+        elif trip.end_date < today:
+            completed.append(trip)
+            trip.ui_status = 'Completed'
+            trip.ui_class = 'status-completed'
+            trip.ui_icon = 'check_circle'
+        else:
+            upcoming.append(trip)
+            trip.ui_status = 'Upcoming'
+            trip.ui_class = 'status-upcoming'
+            trip.ui_icon = 'flight_takeoff'
+
+    # 3. Render Template
+    return render_template('mytrip.html', 
+                           trips=all_trips,
+                           upcoming=upcoming,
+                           completed=completed,
+                           drafts=drafts,
+                           total_spent=total_spent,
+                           countries_count=len(unique_countries))
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
