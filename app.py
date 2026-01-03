@@ -1,8 +1,12 @@
+import os
+from datetime import datetime, timedelta
+
 from amadeus import Client, ResponseError
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    url_for)
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
+from werkzeug.utils import secure_filename
 
 from models import Itinerary, Trip, User, db  # Import the schema
 
@@ -15,6 +19,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///globetrotter.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Ensure the folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
 
 # --- CONFIGURATION ---
 # Replace these with your actual keys from developers.amadeus.com
@@ -34,6 +45,8 @@ with app.app_context():
 
 
 
+
+
 # NOTE: Login and SIgnup
 
 login_manager = LoginManager()
@@ -43,6 +56,9 @@ login_manager.login_view = 'login' # Redirect here if user isn't logged in
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+
 
 # --- ROUTES ---
 
@@ -94,25 +110,130 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('create-trip.html', name=current_user.username)
+    # Fetch all trips belonging to the current user
+    user_trips = Trip.query.filter_by(user_id=current_user.id).order_by(Trip.start_date.desc()).all()
+    
+    # You'll need to create a simple dashboard.html or pass this to index
+    # For now, let's just pass it to create-trip if that's your main view
+    return render_template('create-trip.html', name=current_user.username, trips=user_trips)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-@app.route("/create-trip")
-def createTrip():
+@app.route("/create-trip", methods=['GET', 'POST'])
+@login_required # Ensure they are logged in!
+def create_trip():
+    if request.method == 'POST':
+        # 1. Get Text Data
+        name = request.form.get('name')
+        desc = request.form.get('description')
+        start = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+        end = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+        
+        # Get the new fields
+        travel_style = request.form.get('travel_style')
+        budget = request.form.get('budget')
+        tags = request.form.get('tags') # "Beach,Adventure"
+        
+        # 2. Handle File Upload
+        cover_photo_path = None
+        if 'cover_photo' in request.files:
+            file = request.files['cover_photo']
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                # Save to static/uploads
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # Store the relative path in DB
+                cover_photo_path = f'uploads/{filename}'
+        
+        # 3. Save to Database
+        new_trip = Trip(
+            user_id=current_user.id,
+            name=name,
+            description=desc,
+            start_date=start,
+            end_date=end,
+            travel_style=travel_style,
+            budget_limit=float(budget) if budget else 0.0,
+            tags=tags,
+            cover_photo=cover_photo_path
+        )
+        
+        db.session.add(new_trip)
+        db.session.commit()
+        
+        flash('Trip created successfully!')
+        # Redirect to the Builder with the new Trip ID
+        return redirect(url_for('itinerary_builder', trip_id=new_trip.id))
+        
     return render_template("create-trip.html")
 
+@app.route('/api/add-stop/<int:trip_id>', methods=['POST'])
+@login_required
+def add_stop(trip_id):
+    # 1. Get the trip and verify ownership
+    trip = Trip.query.get_or_404(trip_id)
+    
+    if trip.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
 
-@app.route("/itinerary-builder")
-def iternaryBuilder():
-    return render_template("itinerary-builder.html")
+    # 2. Get the data from the frontend
+    data = request.json
+    city_name = data.get('city_name')
+    
+    if not city_name:
+        return jsonify({"error": "City name required"}), 400
 
+    # 3. Intelligent Date Logic
+    # If there are existing stops, start after the last one.
+    # Otherwise, start on the Trip Start Date.
+    last_stop = Itinerary.query.filter_by(trip_id=trip.id).order_by(Itinerary.stop_order.desc()).first()
+    
+    if last_stop:
+        new_arrival = last_stop.departure_date
+        new_order = last_stop.stop_order + 1
+    else:
+        new_arrival = trip.start_date
+        new_order = 1
+        
+    # Default duration: 2 days (User can edit this later)
+    new_departure = new_arrival + timedelta(days=2)
+
+    # 4. Save to Database
+    new_stop = Itinerary(
+        trip_id=trip.id,
+        city_name=city_name,
+        country_name=data.get('country', ''),
+        arrival_date=new_arrival,
+        departure_date=new_departure,
+        stop_order=new_order
+    )
+    
+    db.session.add(new_stop)
+    db.session.commit()
+    
+    return jsonify({"message": "Stop added!", "id": new_stop.id})
+
+
+@app.route("/itinerary-builder/<int:trip_id>")
+@login_required
+def itinerary_builder(trip_id):
+    # 1. Fetch the trip or return 404 if not found
+    trip = Trip.query.get_or_404(trip_id)
+    
+    # 2. Security Check: Ensure the logged-in user owns this trip
+    if trip.user_id != current_user.id:
+        flash("You do not have permission to edit this trip.")
+        return redirect(url_for('dashboard'))
+        
+    # 3. Pass the trip object to the template (so you can show the Trip Name)
+    return render_template("itinerary-builder.html", trip=trip)
 
 @app.route("/itinerary-view")
 def iternaryView():

@@ -40,17 +40,25 @@ class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
+    # Existing fields
     name = db.Column(db.String(100), nullable=False)
-    start_date = db.Column(db.Date, nullable=False) # Keep as Date object
+    start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text)
-    cover_photo = db.Column(db.String(255))
-    
+    cover_photo = db.Column(db.String(255)) 
     budget_limit = db.Column(db.Float, default=0.0)
+    travelers_count = db.Column(db.Integer, default=1)
+    
+    # --- NEW FIELDS FOR THE FORM ---
+    travel_style = db.Column(db.String(50)) # e.g., "Luxury"
+    tags = db.Column(db.String(500))        # e.g., "Beach,Adventure,Cultural"
+    
     is_public = db.Column(db.Boolean, default=False)
     
     # Relationships
     itineraries = db.relationship('Itinerary', backref='trip', lazy=True, cascade="all, delete-orphan")
+
+
 
 # --- ITINERARY TABLE ---
 class Itinerary(db.Model):

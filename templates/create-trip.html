@@ -432,89 +432,88 @@
             <h1 class="page-title">Create Your Dream Trip</h1>
             <p class="page-subtitle">Start planning an unforgettable journey</p>
         </div>
+			<div class="form-card">
+				<form id="createTripForm" action="{{ url_for('create_trip') }}" method="POST" enctype="multipart/form-data">
 
-        <div class="form-card">
-            <form id="createTripForm">
-                <div class="form-section">
-                    <h2 class="section-title">
-                        <div class="section-icon">📝</div>
-                        Basic Information
-                    </h2>
-                    <div class="input-group">
-                        <label for="tripName">Trip Name *</label>
-                        <input type="text" id="tripName" placeholder="e.g., European Summer Adventure" required>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label for="startDate">Start Date *</label>
-                            <input type="date" id="startDate" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="endDate">End Date *</label>
-                            <input type="date" id="endDate" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="description">Trip Description</label>
-                        <textarea id="description" placeholder="Describe your trip, what you're looking forward to, travel goals..."></textarea>
-                    </div>
-                </div>
+					<div class="form-section">
+						<h2 class="section-title"><div class="section-icon">📝</div> Basic Information</h2>
 
-                <div class="form-section">
-                    <h2 class="section-title">
-                        <div class="section-icon">🌍</div>
-                        Travel Preferences
-                    </h2>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label for="travelStyle">Travel Style</label>
-                            <select id="travelStyle">
-                                <option value="">Select your style</option>
-                                <option value="luxury">Luxury</option>
-                                <option value="comfort">Comfort</option>
-                                <option value="budget">Budget-Friendly</option>
-                                <option value="backpacker">Backpacker</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="budget">Estimated Budget (USD)</label>
-                            <input type="number" id="budget" placeholder="e.g., 5000">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Trip Type (Select all that apply)</label>
-                        <div class="tags-container">
-                            <button type="button" class="tag">🏖️ Beach</button>
-                            <button type="button" class="tag">⛰️ Adventure</button>
-                            <button type="button" class="tag">🏛️ Cultural</button>
-                            <button type="button" class="tag">🍽️ Food Tour</button>
-                            <button type="button" class="tag">🎨 Art & Museums</button>
-                            <button type="button" class="tag">🌃 City Break</button>
-                            <button type="button" class="tag">🧘 Wellness</button>
-                            <button type="button" class="tag">📸 Photography</button>
-                        </div>
-                    </div>
-                </div>
+						<div class="input-group">
+							<label for="tripName">Trip Name *</label>
+							<input type="text" id="tripName" name="name" placeholder="e.g., European Summer Adventure" required>
+						</div>
 
-                <div class="form-section">
-                    <h2 class="section-title">
-                        <div class="section-icon">📷</div>
-                        Cover Photo (Optional)
-                    </h2>
-                    <label for="coverPhoto" class="upload-area">
-                        <div class="upload-icon">🖼️</div>
-                        <div class="upload-text">Drop your cover photo here</div>
-                        <div class="upload-subtext">or click to browse (Max 5MB, JPG/PNG)</div>
-                        <input type="file" id="coverPhoto" accept="image/*">
-                    </label>
-                </div>
+						<div class="input-row">
+							<div class="input-group">
+								<label for="startDate">Start Date *</label>
+								<input type="date" id="startDate" name="start_date" required>
+							</div>
+							<div class="input-group">
+								<label for="endDate">End Date *</label>
+								<input type="date" id="endDate" name="end_date" required>
+							</div>
+						</div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-secondary">Save as Draft</button>
-                    <button type="submit" class="btn btn-primary">Continue to Itinerary →</button>
-                </div>
-            </form>
-        </div>
+						<div class="input-group">
+							<label for="description">Trip Description</label>
+							<textarea id="description" name="description" placeholder="Describe your trip..."></textarea>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h2 class="section-title"><div class="section-icon">🌍</div> Travel Preferences</h2>
+
+						<div class="input-row">
+							<div class="input-group">
+								<label for="travelStyle">Travel Style</label>
+								<select id="travelStyle" name="travel_style">
+									<option value="">Select your style</option>
+									<option value="luxury">Luxury</option>
+									<option value="comfort">Comfort</option>
+									<option value="budget">Budget-Friendly</option>
+									<option value="backpacker">Backpacker</option>
+								</select>
+							</div>
+							<div class="input-group">
+								<label for="budget">Estimated Budget (USD)</label>
+								<input type="number" id="budget" name="budget" placeholder="e.g., 5000">
+							</div>
+						</div>
+
+						<div class="input-group">
+							<label>Trip Type (Select all that apply)</label>
+
+							<input type="hidden" id="selectedTags" name="tags">
+
+							<div class="tags-container" id="tagsContainer">
+								<button type="button" class="tag" data-value="Beach">🏖️ Beach</button>
+								<button type="button" class="tag" data-value="Adventure">⛰️ Adventure</button>
+								<button type="button" class="tag" data-value="Cultural">🏛️ Cultural</button>
+								<button type="button" class="tag" data-value="Food">🍽️ Food Tour</button>
+								<button type="button" class="tag" data-value="Museums">🎨 Art & Museums</button>
+								<button type="button" class="tag" data-value="City">🌃 City Break</button>
+								<button type="button" class="tag" data-value="Wellness">🧘 Wellness</button>
+								<button type="button" class="tag" data-value="Photography">📸 Photography</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-section">
+						<h2 class="section-title"><div class="section-icon">📷</div> Cover Photo (Optional)</h2>
+						<label for="coverPhoto" class="upload-area">
+							<div class="upload-icon">🖼️</div>
+							<div class="upload-text">Drop your cover photo here</div>
+							<div class="upload-subtext">or click to browse (Max 5MB, JPG/PNG)</div>
+							<input type="file" id="coverPhoto" name="cover_photo" accept="image/*">
+						</label>
+					</div>
+
+					<div class="button-group">
+						<button type="button" class="btn btn-secondary">Save as Draft</button>
+						<button type="submit" class="btn btn-primary">Continue to Itinerary →</button>
+					</div>
+				</form>
+			</div>
     </div>
 
     <script>
@@ -541,6 +540,40 @@
                 uploadArea.querySelector('.upload-text').style.color = 'white';
             }
         });
+
+
+		<script>
+	// Handle Tags Logic
+	const tagButtons = document.querySelectorAll('.tag');
+	const hiddenInput = document.getElementById('selectedTags');
+	let selectedTags = [];
+
+	tagButtons.forEach(tag => {
+		tag.addEventListener('click', function() {
+			this.classList.toggle('selected');
+			const value = this.getAttribute('data-value');
+
+			if (this.classList.contains('selected')) {
+				selectedTags.push(value);
+			} else {
+				selectedTags = selectedTags.filter(t => t !== value);
+			}
+
+			// Update the hidden input with comma-separated string
+			hiddenInput.value = selectedTags.join(',');
+		});
+	});
+
+	// Handle File Upload Preview
+	document.getElementById('coverPhoto').addEventListener('change', function(e) {
+		if (e.target.files && e.target.files[0]) {
+			const uploadArea = document.querySelector('.upload-area');
+			uploadArea.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+			uploadArea.querySelector('.upload-text').textContent = '✓ ' + e.target.files[0].name;
+			uploadArea.querySelector('.upload-text').style.color = 'white';
+		}
+	});
+</script>
     </script>
 </body>
 </html>
