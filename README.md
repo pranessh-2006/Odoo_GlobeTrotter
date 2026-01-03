@@ -1,6 +1,3 @@
-Here is a comprehensive `README.md` file tailored specifically to the current state of your code. It documents the features, tech stack, and setup instructions based on your `app.py`, `models.py`, and templates.
-
----
 
 # 🌍 GlobeTrotter
 
