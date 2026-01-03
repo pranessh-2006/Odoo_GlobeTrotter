@@ -101,6 +101,9 @@ AMADEUS_CLIENT_SECRET = "YOUR_CLIENT_SECRET"
 
 ```
 
+But for testing purposes the client ID and secrect of the developer is provided.
+
+
 ### 5. Initialize the Database
 
 The application is configured to automatically create the database tables if they don't exist when you run the app.
