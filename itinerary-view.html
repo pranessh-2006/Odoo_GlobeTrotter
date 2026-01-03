@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>European Summer Adventure - GlobeTrotter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 70vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f59e0b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 0 40px;
+            animation: heroFadeIn 1s ease-out;
+        }
+
+        @keyframes heroFadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .trip-badge {
+            display: inline-block;
+            padding: 10px 24px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-title {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn {
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-btn.primary {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 8px 30px rgba(255,255,255,0.3);
+        }
+
+        .hero-btn.primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(255,255,255,0.4);
+        }
+
+        .hero-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .hero-btn.secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-4px);
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 20px 60px;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 0 60px;
+        }
+
+        /* Trip Overview Cards */
+        .overview-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .overview-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            animation: cardFadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .overview-card:nth-child(1) { animation-delay: 0.1s; }
+        .overview-card:nth-child(2) { animation-delay: 0.2s; }
+        .overview-card:nth-child(3) { animation-delay: 0.3s; }
+        .overview-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .overview-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 80px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea, #764ba2, #f59e0b);
+            border-radius: 4px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 60px;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -60px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+            border: 4px solid #0a0a0a;
+        }
+
+        .timeline-content {
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            border-color: #667eea;
+            transform: translateX(10px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .day-info h3 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .day-date {
+            color: rgba(255,255,255,0.6);
+            font-size: 15px;
+        }
+
+        .day-cost {
+            text-align: right;
+        }
+
+        .cost-label {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4px;
+        }
+
+        .cost-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #10b981;
+        }
+
+        .activities-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .activity-item {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 16px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(8px);
+        }
+
+        .activity-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .activity-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .activity-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .activity-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .activity-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .activity-tag {
+            padding: 6px 14px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Budget Breakdown */
+        .budget-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 60px;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .total-budget {
+            font-size: 48px;
+            font-weight: 900;
+            color: #10b981;
+        }
+
+        .budget-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .budget-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .budget-category {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+        }
+
+        .budget-amount {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-title {
+                font-size: 42px;
+            }
+
+            .container {
+                padding: 0 20px;
+            }
+
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .timeline {
+                padding-left: 60px;
+            }
+
+            .timeline-marker {
+                width: 50px;
+                height: 50px;
+                left: -50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <div class="trip-badge">15 Day Adventure</div>
+            <h1 class="hero-title">European Summer Adventure</h1>
+            <p class="hero-subtitle">Paris → Rome → Athens • June 15-30, 2026</p>
+            <div class="hero-actions">
+                <button class="hero-btn primary">
+                    <span>📥</span> Copy Trip
+                </button>
+                <button class="hero-btn secondary">
+                    <span>🔗</span> Share
+                </button>
+                <button class="hero-btn secondary">
+                    <span>📄</span> Export PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="nav-tabs">
+                <button class="nav-tab active">Timeline</button>
+                <button class="nav-tab">Map View</button>
+                <button class="nav-tab">Budget</button>
+                <button class="nav-tab">Activities</button>
+            </div>
+            <div class="view-toggle">
+                <button class="toggle-btn active">📋</button>
+                <button class="toggle-btn">📅</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="overview-section">
+            <div class="overview-card">
+                <div class="card-icon">🌍</div>
+                <div class="card-label">Countries</div>
+                <div class="card-value">3</div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">🏙️</div>
+                <div class="card-label">Cities</div>
+                <div class="card-value">3</div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">🎯</div>
+                <div class="card-label">Activities</div>
+                <div class="card-value">24</div>
+            </div>
+            <div class="overview-card">
+                <div class="card-icon">💰</div>
+                <div class="card-label">Total Budget</div>
+                <div class="card-value">$4,250</div>
+            </div>
+        </div>
+
+        <div class="budget-section">
+            <div class="budget-header">
+                <div>
+                    <h2 class="section-title">Budget Breakdown</h2>
+                    <p class="section-subtitle">Estimated costs for your 15-day journey</p>
+                </div>
+                <div class="total-budget">$4,250</div>
+            </div>
+            <div class="budget-items">
+                <div class="budget-item">
+                    <div class="budget-category">🏨 Accommodation</div>
+                    <div class="budget-amount">$1,650</div>
+                </div>
+                <div class="budget-item">
+                    <div class="budget-category">✈️ Transportation</div>
+                    <div class="budget-amount">$850</div>
+                </div>
+                <div class="budget-item">
+                    <div class="budget-category">🎭 Activities</div>
+                    <div class="budget-amount">$980</div>
+                </div>
+                <div class="budget-item">
+                    <div class="budget-category">🍽️ Food & Dining</div>
+                    <div class="budget-amount">$770</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-section">
+            <div class="section-header">
+                <h2 class="section-title">Your Journey Timeline</h2>
+                <p class="section-subtitle">Day-by-day breakdown of your adventure</p>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">🗼</div>
+                    <div class="timeline-content">
+                        <div class="day-header">
+                            <div class="day-info">
+                                <h3>Day 1 - Paris</h3>
+                                <p class="day-date">Wednesday, June 15, 2026</p>
+                            </div>
+                            <div class="day-cost">
+                                <p class="cost-label">Daily Cost</p>
+                                <p class="cost-value">$295</p>
+                            </div>
+                        </div>
+                        <div class="activities-list">
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Eiffel Tower Visit</div>
+                                        <div class="activity-time">⏰ 9:00 AM - 12:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$45</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🎫 Tickets Required</span>
+                                    <span class="activity-tag">📸 Photo Spot</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Louvre Museum</div>
+                                        <div class="activity-time">⏰ 2:00 PM - 6:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$85</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🎨 Art & Culture</span>
+                                    <span class="activity-tag">🏛️ Museum</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Seine River Dinner Cruise</div>
+                                        <div class="activity-time">⏰ 7:30 PM - 10:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$165</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🍽️ Dining</span>
+                                    <span class="activity-tag">🌃 Evening Activity</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">⛪</div>
+                    <div class="timeline-content">
+                        <div class="day-header">
+                            <div class="day-info">
+                                <h3>Day 2 - Paris</h3>
+                                <p class="day-date">Thursday, June 16, 2026</p>
+                            </div>
+                            <div class="day-cost">
+                                <p class="cost-label">Daily Cost</p>
+                                <p class="cost-value">$185</p>
+                            </div>
+                        </div>
+                        <div class="activities-list">
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Notre-Dame & Latin Quarter</div>
+                                        <div class="activity-time">⏰ 10:00 AM - 2:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">Free</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🚶 Walking Tour</span>
+                                    <span class="activity-tag">🏛️ Historical</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Versailles Palace Day Trip</div>
+                                        <div class="activity-time">⏰ 3:00 PM - 8:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$95</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🏰 Palace</span>
+                                    <span class="activity-tag">🌳 Gardens</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">🍝</div>
+                    <div class="timeline-content">
+                        <div class="day-header">
+                            <div class="day-info">
+                                <h3>Day 5 - Rome</h3>
+                                <p class="day-date">Sunday, June 19, 2026</p>
+                            </div>
+                            <div class="day-cost">
+                                <p class="cost-label">Daily Cost</p>
+                                <p class="cost-value">$220</p>
+                            </div>
+                        </div>
+                        <div class="activities-list">
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Colosseum & Roman Forum</div>
+                                        <div class="activity-time">⏰ 9:00 AM - 1:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$75</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">🏛️ Ancient Rome</span>
+                                    <span class="activity-tag">📜 History</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-main">
+                                    <div>
+                                        <div class="activity-title">Pasta Making Class</div>
+                                        <div class="activity-time">⏰ 4:00 PM - 7:00 PM</div>
+                                    </div>
+                                    <div class="activity-price">$85</div>
+                                </div>
+                                <div class="activity-tags">
+                                    <span class="activity-tag">👨‍🍳 Cooking</span>
+                                    <span class="activity-tag">🍝 Italian Cuisine</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // View toggle
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Add smooth scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            observer.observe(item);
+        });
+    </script>
+</body>
+</html>

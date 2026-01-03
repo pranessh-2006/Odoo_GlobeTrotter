@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Journey - GlobeTrotter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 40px;
+        }
+
+        .page-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .page-subtitle {
+            font-size: 20px;
+            opacity: 0.95;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 15px;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: white;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Image Upload */
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #e6f2ff 0%, #f0e6ff 100%);
+            transform: translateY(-4px);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #a0aec0;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        /* Destination Tags */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .tag {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .tag:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .tag.selected {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        /* Action Buttons */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 40px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 16px 36px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-circle {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6);
+            transform: scale(1.1);
+        }
+
+        .step-label {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .step.active .step-label {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .main-container {
+                padding: 0 20px;
+                margin: 30px auto;
+            }
+
+            .form-card {
+                padding: 30px 20px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 36px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✈️ GlobeTrotter</div>
+        <div class="nav-links">
+            <a href="#dashboard">Dashboard</a>
+            <a href="#trips">My Trips</a>
+            <a href="#explore">Explore</a>
+            <div class="user-avatar">JD</div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Trip Details</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Build Itinerary</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Review & Share</div>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1 class="page-title">Create Your Dream Trip</h1>
+            <p class="page-subtitle">Start planning an unforgettable journey</p>
+        </div>
+
+        <div class="form-card">
+            <form id="createTripForm">
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <div class="section-icon">📝</div>
+                        Basic Information
+                    </h2>
+                    <div class="input-group">
+                        <label for="tripName">Trip Name *</label>
+                        <input type="text" id="tripName" placeholder="e.g., European Summer Adventure" required>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="startDate">Start Date *</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="endDate">End Date *</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="description">Trip Description</label>
+                        <textarea id="description" placeholder="Describe your trip, what you're looking forward to, travel goals..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <div class="section-icon">🌍</div>
+                        Travel Preferences
+                    </h2>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="travelStyle">Travel Style</label>
+                            <select id="travelStyle">
+                                <option value="">Select your style</option>
+                                <option value="luxury">Luxury</option>
+                                <option value="comfort">Comfort</option>
+                                <option value="budget">Budget-Friendly</option>
+                                <option value="backpacker">Backpacker</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="budget">Estimated Budget (USD)</label>
+                            <input type="number" id="budget" placeholder="e.g., 5000">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Trip Type (Select all that apply)</label>
+                        <div class="tags-container">
+                            <button type="button" class="tag">🏖️ Beach</button>
+                            <button type="button" class="tag">⛰️ Adventure</button>
+                            <button type="button" class="tag">🏛️ Cultural</button>
+                            <button type="button" class="tag">🍽️ Food Tour</button>
+                            <button type="button" class="tag">🎨 Art & Museums</button>
+                            <button type="button" class="tag">🌃 City Break</button>
+                            <button type="button" class="tag">🧘 Wellness</button>
+                            <button type="button" class="tag">📸 Photography</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <div class="section-icon">📷</div>
+                        Cover Photo (Optional)
+                    </h2>
+                    <label for="coverPhoto" class="upload-area">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text">Drop your cover photo here</div>
+                        <div class="upload-subtext">or click to browse (Max 5MB, JPG/PNG)</div>
+                        <input type="file" id="coverPhoto" accept="image/*">
+                    </label>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary">Save as Draft</button>
+                    <button type="submit" class="btn btn-primary">Continue to Itinerary →</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tag selection
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Form submission
+        document.getElementById('createTripForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Trip created! Moving to itinerary builder...');
+            // Navigate to itinerary builder
+        });
+
+        // File upload preview
+        document.getElementById('coverPhoto').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const uploadArea = document.querySelector('.upload-area');
+                uploadArea.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+                uploadArea.querySelector('.upload-text').textContent = '✓ Photo uploaded successfully!';
+                uploadArea.querySelector('.upload-text').style.color = 'white';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Itinerary - GlobeTrotter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 40px;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .trip-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .trip-name {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .trip-dates {
+            font-size: 14px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .add-stop-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-stop-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .stops-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stop-item {
+            background: rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 12px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stop-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateX(5px);
+        }
+
+        .stop-item.active {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .stop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .stop-city {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .stop-duration {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .quick-stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 14px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #f59e0b;
+        }
+
+        /* Main Content */
+        .main-content {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .content-header {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .page-subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .builder-container {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .day-section {
+            margin-bottom: 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .day-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .day-date {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .activities-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .activity-card {
+            background: rgba(255,255,255,0.05);
+            padding: 24px;
+            border-radius: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .activity-card:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .activity-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .activity-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .activity-details {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+        }
+
+        .activity-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .activity-cost {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .add-activity-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-activity-card:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            transform: scale(1.02);
+        }
+
+        .add-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .add-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .floating-actions {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 50;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✈️ GlobeTrotter</div>
+        <div class="nav-actions">
+            <button class="nav-btn">💾 Save Draft</button>
+            <button class="nav-btn">👁️ Preview</button>
+            <button class="nav-btn primary">✓ Complete Trip</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="trip-header">
+                <h2 class="trip-name">European Summer Adventure</h2>
+                <div class="trip-dates">📅 Jun 15 - Jun 30, 2026 (15 days)</div>
+            </div>
+
+            <div class="section-title">Your Stops</div>
+            <button class="add-stop-btn">
+                ➕ Add New Stop
+            </button>
+
+            <div class="stops-list">
+                <div class="stop-item active">
+                    <div class="stop-header">
+                        <span class="stop-city">🗼 Paris</span>
+                        <span>⋮</span>
+                    </div>
+                    <div class="stop-duration">3 days • Jun 15-17</div>
+                </div>
+                <div class="stop-item">
+                    <div class="stop-header">
+                        <span class="stop-city">🍝 Rome</span>
+                        <span>⋮</span>
+                    </div>
+                    <div class="stop-duration">4 days • Jun 18-21</div>
+                </div>
+                <div class="stop-item">
+                    <div class="stop-header">
+                        <span class="stop-city">🏛️ Athens</span>
+                        <span>⋮</span>
+                    </div>
+                    <div class="stop-duration">3 days • Jun 22-24</div>
+                </div>
+            </div>
+
+            <div class="quick-stats">
+                <div class="section-title">Trip Summary</div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Cities</span>
+                    <span class="stat-value">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Activities</span>
+                    <span class="stat-value">12</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Est. Budget</span>
+                    <span class="stat-value">$4,250</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg. Cost/Day</span>
+                    <span class="stat-value">$283</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1 class="page-title">Build Your Itinerary</h1>
+                <p class="page-subtitle">Add activities and organize your perfect day-by-day schedule</p>
+            </div>
+
+            <div class="builder-container">
+                <div class="day-section">
+                    <div class="day-header">
+                        <div>
+                            <div class="day-title">Day 1 - Paris</div>
+                            <div class="day-date">Wednesday, June 15, 2026</div>
+                        </div>
+                        <div class="activity-cost">$185</div>
+                    </div>
+
+                    <div class="activities-grid">
+                        <div class="activity-card">
+                            <div class="activity-header">
+                                <div class="activity-name">🗼 Eiffel Tower Visit</div>
+                                <div class="activity-time">⏰ 9:00 AM</div>
+                            </div>
+                            <div class="activity-details">
+                                <div class="activity-detail">⏱️ 3 hours</div>
+                                <div class="activity-detail activity-cost">$45</div>
+                                <div class="activity-detail">🎫 Tickets Required</div>
+                            </div>
+                        </div>
+
+                        <div class="activity-card">
+                            <div class="activity-header">
+                                <div class="activity-name">🎨 Louvre Museum</div>
+                                <div class="activity-time">⏰ 2:00 PM</div>
+                            </div>
+                            <div class="activity-details">
+                                <div class="activity-detail">⏱️ 4 hours</div>
+                                <div class="activity-detail activity-cost">$65</div>
+                                <div class="activity-detail">🏛️ Culture</div>
+                            </div>
+                        </div>
+
+                        <div class="activity-card">
+                            <div class="activity-header">
+                                <div class="activity-name">🍷 Seine River Dinner Cruise</div>
+                                <div class="activity-time">⏰ 7:30 PM</div>
+                            </div>
+                            <div class="activity-details">
+                                <div class="activity-detail">⏱️ 2 hours</div>
+                                <div class="activity-detail activity-cost">$75</div>
+                                <div class="activity-detail">🍽️ Dining</div>
+                            </div>
+                        </div>
+
+                        <div class="add-activity-card">
+                            <div class="add-icon">➕</div>
+                            <div class="add-text">Add Activity to Day 1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="day-section">
+                    <div class="day-header">
+                        <div>
+                            <div class="day-title">Day 2 - Paris</div>
+                            <div class="day-date">Thursday, June 16, 2026</div>
+                        </div>
+                        <div class="activity-cost">$120</div>
+                    </div>
+
+                    <div class="activities-grid">
+                        <div class="activity-card">
+                            <div class="activity-header">
+                                <div class="activity-name">⛪ Notre-Dame & Latin Quarter</div>
+                                <div class="activity-time">⏰ 10:00 AM</div>
+                            </div>
+                            <div class="activity-details">
+                                <div class="activity-detail">⏱️ 3 hours</div>
+                                <div class="activity-detail activity-cost">Free</div>
+                                <div class="activity-detail">🚶 Walking Tour</div>
+                            </div>
+                        </div>
+
+                        <div class="add-activity-card">
+                            <div class="add-icon">➕</div>
+                            <div class="add-text">Add More Activities</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="floating-actions">
+        <button class="fab" title="Search Activities">🔍</button>
+        <button class="fab" title="Add Stop">📍</button>
+        <button class="fab" title="View Calendar">📅</button>
+    </div>
+
+    <script>
+        // Make stops draggable
+        const stops = document.querySelectorAll('.stop-item');
+        stops.forEach(stop => {
+            stop.addEventListener('click', function() {
+                stops.forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Activity card interactions
+        document.querySelectorAll('.add-activity-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert('Opening activity search...');
+            });
+        });
+
+        // FAB actions
+        document.querySelectorAll('.fab').forEach(fab => {
+            fab.addEventListener('click', function() {
+                const title = this.getAttribute('title');
+                alert(title + ' - Feature coming soon!');
+            });
+        });
+    </script>
+</body>
+</html>
