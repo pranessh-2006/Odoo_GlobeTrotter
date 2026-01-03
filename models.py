@@ -88,15 +88,17 @@ class Activity(db.Model):
     itinerary_id = db.Column(db.Integer, db.ForeignKey('itineraries.id'), nullable=False)
     
     title = db.Column(db.String(200), nullable=False)
-    category = db.Column(db.String(50), nullable=False) # transport, stay, activity, food
+    category = db.Column(db.String(50), nullable=False)
     
     cost = db.Column(db.Float, default=0.0)
     currency = db.Column(db.String(10), default='USD')
     
+    # --- NEW FIELD ---
+    activity_date = db.Column(db.Date, nullable=True) # Stores specific date (YYYY-MM-DD)
+    
     start_time = db.Column(db.Time, nullable=True)
     duration_minutes = db.Column(db.Integer, nullable=True)
     is_booked = db.Column(db.Boolean, default=False)
-
 # --- SAVED DESTINATIONS TABLE ---
 class SavedDestination(db.Model):
     __tablename__ = 'saved_destinations'

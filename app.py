@@ -8,7 +8,7 @@ from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from werkzeug.utils import secure_filename
 
-from models import Itinerary, Trip, User, db  # Import the schema
+from models import Activity, Itinerary, Trip, User, db  # Import the schema
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///globetrotter.db'
@@ -89,20 +89,29 @@ def signup():
 
     return render_template('signup.html')
 
-@app.route('/login', methods=['POST'])
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    
-    user = User.query.filter_by(email=email).first()
-    
-    # Verify User and Password
-    if user and user.check_password(password):
-        login_user(user)
-        return redirect(url_for('dashboard')) # Success! Go to Dashboard
-    else:
-        flash('Invalid email or password')
-        return redirect(url_for('index'))
+    # If user is already logged in, send them to dashboard
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(email=email).first()
+        
+        # Verify User and Password
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid email or password')
+            return redirect(url_for('login')) # Stay on login page on error
+
+    # For GET requests, show the login page
+    return render_template('login.html')
 
 @app.route('/logout')
 @login_required
@@ -123,8 +132,33 @@ def dashboard():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # 1. If User is NOT logged in, just show the static landing page
+    if not current_user.is_authenticated:
+        return render_template("index.html", trips=[], total_budget=0, total_spent=0)
 
+    # 2. If User IS logged in, fetch their real data
+    my_trips = Trip.query.filter_by(user_id=current_user.id).order_by(Trip.start_date.asc()).all()
+    
+    # 3. Calculate Global Stats (For the Budget Cards)
+    total_budget = 0
+    total_spent = 0
+    
+    for trip in my_trips:
+        # Sum up the budget limits
+        total_budget += (trip.budget_limit or 0)
+        
+        # Sum up actual activity costs
+        for stop in trip.itineraries:
+            for activity in stop.activities:
+                total_spent += (activity.cost or 0)
+    
+    available_funds = total_budget - total_spent
+
+    return render_template("index.html", 
+                           trips=my_trips, 
+                           total_budget=total_budget, 
+                           total_spent=total_spent,
+                           available_funds=available_funds)
 
 @app.route("/create-trip", methods=['GET', 'POST'])
 @login_required # Ensure they are logged in!
@@ -177,35 +211,38 @@ def create_trip():
 @app.route('/api/add-stop/<int:trip_id>', methods=['POST'])
 @login_required
 def add_stop(trip_id):
-    # 1. Get the trip and verify ownership
     trip = Trip.query.get_or_404(trip_id)
-    
     if trip.user_id != current_user.id:
         return jsonify({"error": "Unauthorized"}), 403
 
-    # 2. Get the data from the frontend
     data = request.json
     city_name = data.get('city_name')
     
-    if not city_name:
-        return jsonify({"error": "City name required"}), 400
+    # 1. Check for Manual Dates from Frontend
+    manual_arrival = data.get('arrival_date')
+    manual_departure = data.get('departure_date')
 
-    # 3. Intelligent Date Logic
-    # If there are existing stops, start after the last one.
-    # Otherwise, start on the Trip Start Date.
-    last_stop = Itinerary.query.filter_by(trip_id=trip.id).order_by(Itinerary.stop_order.desc()).first()
-    
-    if last_stop:
-        new_arrival = last_stop.departure_date
-        new_order = last_stop.stop_order + 1
-    else:
-        new_arrival = trip.start_date
-        new_order = 1
+    if manual_arrival and manual_departure:
+        # Parse the string dates (YYYY-MM-DD) into Python Date objects
+        new_arrival = datetime.strptime(manual_arrival, '%Y-%m-%d').date()
+        new_departure = datetime.strptime(manual_departure, '%Y-%m-%d').date()
         
-    # Default duration: 2 days (User can edit this later)
-    new_departure = new_arrival + timedelta(days=2)
+        # Calculate order (just append to end)
+        last_stop = Itinerary.query.filter_by(trip_id=trip.id).order_by(Itinerary.stop_order.desc()).first()
+        new_order = (last_stop.stop_order + 1) if last_stop else 1
+        
+    else:
+        # Fallback: Automatic Calculation (Original Logic)
+        last_stop = Itinerary.query.filter_by(trip_id=trip.id).order_by(Itinerary.stop_order.desc()).first()
+        if last_stop:
+            new_arrival = last_stop.departure_date
+            new_order = last_stop.stop_order + 1
+        else:
+            new_arrival = trip.start_date
+            new_order = 1
+        new_departure = new_arrival + timedelta(days=2)
 
-    # 4. Save to Database
+    # 2. Save to DB
     new_stop = Itinerary(
         trip_id=trip.id,
         city_name=city_name,
@@ -219,7 +256,6 @@ def add_stop(trip_id):
     db.session.commit()
     
     return jsonify({"message": "Stop added!", "id": new_stop.id})
-
 
 @app.route("/itinerary-builder/<int:trip_id>")
 @login_required
@@ -235,10 +271,47 @@ def itinerary_builder(trip_id):
     # 3. Pass the trip object to the template (so you can show the Trip Name)
     return render_template("itinerary-builder.html", trip=trip)
 
-@app.route("/itinerary-view")
-def iternaryView():
-    return render_template("itinerary-view.html")
+@app.route("/itinerary-view/<int:trip_id>")
+@login_required
+def itinerary_view(trip_id):
+    trip = Trip.query.get_or_404(trip_id)
+    
+    if trip.user_id != current_user.id:
+        flash("Unauthorized")
+        return redirect(url_for('dashboard'))
 
+    # 1. Initialize Total & Breakdown buckets
+    total_cost = 0
+    category_breakdown = {
+        'transport': 0,
+        'accommodation': 0,
+        'sightseeing': 0,
+        'food': 0,
+        'shopping': 0,
+        'other': 0  # <--- All custom/unknown categories go here
+    }
+    
+    # 2. Iterate through every activity in the trip
+    for stop in trip.itineraries:
+        for activity in stop.activities:
+            cost = activity.cost or 0
+            total_cost += cost
+            
+            # Normalize the category (handle potential None values)
+            cat = (activity.category or 'other').lower().strip()
+            
+            # 3. bucket logic: If it matches a key, add it there; else add to 'other'
+            if cat in category_breakdown:
+                category_breakdown[cat] += cost
+            else:
+                category_breakdown['other'] += cost
+
+    return render_template(
+        "itinerary-view.html", 
+        trip=trip, 
+        total_cost=total_cost, 
+        breakdown=category_breakdown
+    )
 
 @app.route('/api/city-suggestions', methods=['GET'])
 def city_suggestions():
@@ -327,5 +400,48 @@ def search_city():
         print(e)
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/api/add-activity/<int:itinerary_id>', methods=['POST'])
+@login_required
+def add_activity(itinerary_id):
+    try:
+        # ... setup code ...
+        
+        data = request.json
+        
+        # 1. Handle Date (YYYY-MM-DD -> Python Date)
+        date_obj = None
+        if data.get('activity_date'):
+            try:
+                date_obj = datetime.strptime(data.get('activity_date'), '%Y-%m-%d').date()
+            except ValueError:
+                pass 
+
+        # ... existing Time handling ...
+        # ... existing Cost handling ...
+
+        # 2. Create Activity with the new date
+        new_activity = Activity(
+            itinerary_id=itinerary.id,
+            title=data.get('title'),
+            category=data.get('category'),
+            cost=cost_val,
+            
+            activity_date=date_obj,  # <--- Save the date here
+            
+            duration_minutes=duration_val,
+            start_time=time_obj
+        )
+        
+        db.session.add(new_activity)
+        db.session.commit()
+        
+        return jsonify({"message": "Activity added", "id": new_activity.id})
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"message": "Activity added", "id": new_activity.id})
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
