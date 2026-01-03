@@ -66,6 +66,70 @@
             border: none;
         }
 
+
+		/* Container for the search box */
+		.stop-search-container {
+			background: rgba(255, 255, 255, 0.1);
+			padding: 15px;
+			border-radius: 14px;
+			margin-bottom: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			animation: slideDown 0.3s ease-out;
+		}
+		
+		@keyframes slideDown {
+			from { opacity: 0; transform: translateY(-10px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+		
+		/* The Search Input */
+		.stop-search-container input {
+			width: 100%;
+			padding: 12px;
+			border-radius: 8px;
+			border: none;
+			background: rgba(255, 255, 255, 0.9);
+			color: #1e293b;
+			font-weight: 600;
+		}
+		
+		/* The Close (X) Button */
+		.close-search {
+			position: absolute;
+			right: 25px;
+			top: 25px;
+			background: none;
+			border: none;
+			color: #64748b;
+			font-size: 20px;
+			cursor: pointer;
+		}
+		
+		/* The Dropdown Results */
+		.search-results-list {
+			margin-top: 10px;
+			max-height: 200px;
+			overflow-y: auto;
+			background: #1e293b;
+			border-radius: 8px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			display: none; /* Hidden by default */
+		}
+		
+		.search-result-item {
+			padding: 10px 14px;
+			cursor: pointer;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			transition: background 0.2s;
+			font-size: 14px;
+		}
+		
+		.search-result-item:hover {
+			background: #3b82f6;
+			color: white;
+		}
+
+
         .container {
             display: grid;
             grid-template-columns: 350px 1fr;
@@ -434,9 +498,21 @@
             </div>
 
             <div class="section-title">Your Stops</div>
-            <button class="add-stop-btn">
-                ➕ Add New Stop
-            </button>
+				<button id="addStopBtn" class="add-stop-btn">
+					➕ Add New Stop
+				</button>
+				
+				<div id="stopSearchContainer" class="stop-search-container" style="display: none;">
+					<div class="input-group">
+						<input type="text" 
+							id="citySearchInput" 
+							placeholder="Type a city (e.g., London)..." 
+							autocomplete="off">
+						<button id="closeSearchBtn" class="close-search">×</button>
+					</div>
+					<div id="searchResults" class="search-results-list"></div>
+				</div>
+
 
             <div class="stops-list">
                 <div class="stop-item active">
@@ -605,6 +681,86 @@
                 alert(title + ' - Feature coming soon!');
             });
         });
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addBtn = document.getElementById('addStopBtn');
+    const searchContainer = document.getElementById('stopSearchContainer');
+    const closeBtn = document.getElementById('closeSearchBtn');
+    const input = document.getElementById('citySearchInput');
+    const resultsList = document.getElementById('searchResults');
+    let debounceTimer;
+
+    // 1. Toggle Visibility
+    addBtn.addEventListener('click', () => {
+        addBtn.style.display = 'none'; // Hide the big button
+        searchContainer.style.display = 'block'; // Show the search box
+        input.focus();
+    });
+
+    closeBtn.addEventListener('click', () => {
+        searchContainer.style.display = 'none';
+        addBtn.style.display = 'flex'; // Bring back the big button
+        input.value = ''; // Clear text
+        resultsList.style.display = 'none';
+    });
+
+    // 2. Handle Typing (Debounced API Call)
+    input.addEventListener('input', function() {
+        const query = this.value;
+        
+        // Clear old timer
+        clearTimeout(debounceTimer);
+        resultsList.innerHTML = '';
+        
+        if (query.length < 3) {
+            resultsList.style.display = 'none';
+            return;
+        }
+
+        // Wait 300ms before calling API
+        debounceTimer = setTimeout(async () => {
+            try {
+                // Call your Flask API
+                const res = await fetch(`/api/city-suggestions?query=${query}`);
+                const suggestions = await res.json();
+
+                if (suggestions.length > 0) {
+                    resultsList.style.display = 'block';
+                    suggestions.forEach(city => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.textContent = city.label; // e.g., "Paris, France"
+                        
+                        // When user clicks a city...
+                        div.addEventListener('click', () => {
+                            addCityToItinerary(city);
+                        });
+                        
+                        resultsList.appendChild(div);
+                    });
+                } else {
+                    resultsList.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Error fetching cities:", err);
+            }
+        }, 300);
+    });
+
+    // 3. (Placeholder) What happens when you click a city
+    function addCityToItinerary(cityData) {
+        alert(`You selected: ${cityData.label}\nNext Step: Save this to the Database!`);
+        
+        // Reset the UI
+        input.value = '';
+        resultsList.style.display = 'none';
+        searchContainer.style.display = 'none';
+        addBtn.style.display = 'flex';
+        
+        // TODO: Here you will eventually call a POST request to save the stop
+    }
+});
     </script>
 </body>
 </html>
