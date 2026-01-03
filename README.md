@@ -1,139 +1,138 @@
-# 🌍 GlobeTrotter – Smart Travel Planner
-
-GlobeTrotter is a Flask-based travel planning web application inspired by platforms like MakeMyTrip.  
-It allows users to plan trips, manage itineraries, track budgets, and explore destinations using real-time travel data.
+Here is a comprehensive `README.md` file tailored specifically to the current state of your code. It documents the features, tech stack, and setup instructions based on your `app.py`, `models.py`, and templates.
 
 ---
 
-## 🚀 Features
+# 🌍 GlobeTrotter
 
-- User Signup & Login (Flask-Login)
-- Dashboard / Home Page (MakeMyTrip-style)
-- Create & manage trips
-- Multi-city itinerary builder
-- Activity planner with cost tracking
-- Budget summary & category breakdown
-- City search & suggestions (Amadeus API)
-- Image uploads for trip covers
-- Secure authentication & authorization
+**Travel Beyond Boundaries**
 
----
+GlobeTrotter is a full-featured travel planning application built with **Flask**. It allows users to create detailed itineraries, manage travel budgets in real-time, and organize trips with a modern, glassmorphism-inspired user interface.
 
-## 🛠 Tech Stack
+## ✨ Key Features
 
-- **Backend:** Flask (Python)
-- **Frontend:** HTML, CSS, JavaScript
-- **Database:** SQLite + SQLAlchemy
-- **Authentication:** Flask-Login
-- **APIs:** Amadeus Travel API
-- **Image Source:** Unsplash (dynamic)
+* **🔐 Secure Authentication**: User signup and login system using `Flask-Login` with hashed passwords for security.
+* **✈️ Smart Trip Planning**: Create trips with specific travel styles (Luxury, Backpacking, etc.), budget limits, and tags.
+* **📍 Interactive Itinerary Builder**:
+* Add multiple stops (cities) to your trip.
+* Automatically calculates stop orders.
+* Integrated city search powered by the **Amadeus API**.
 
----
+
+* **📝 Activity Management**:
+* Add detailed activities for each stop (Sightseeing, Food, Transport, etc.).
+* Track costs, specific dates, times, and booking status.
+
+
+* **💰 Budget Tracker**: Real-time comparison of your estimated budget vs. actual expenses, complete with a category-wise breakdown.
+* **📊 Dashboard**: A comprehensive "My Trips" view to manage Upcoming, Completed, and Draft trips.
+* **🎨 Modern UI**: Fully responsive design featuring glassmorphism effects, animated backgrounds, and smooth transitions.
+
+## 🛠️ Tech Stack
+
+* **Backend**: Python, Flask
+* **Database**: SQLite (via SQLAlchemy ORM)
+* **Frontend**: HTML5, CSS3 (Custom + Tailwind CSS), JavaScript
+* **APIs**:
+* **Amadeus API**: For city search, suggestions, and location analytics.
+* **Unsplash**: Dynamic image sourcing for destinations.
+
+
 
 ## 📂 Project Structure
 
-globetrotter/
-│
-├── app.py
-├── models.py
-├── requirements.txt
-├── README.md
-│
-├── templates/
-│ ├── index.html
-│ ├── login.html
-│ ├── signup.html
-│ ├── create-trip.html
-│ ├── itinerary-builder.html
-│ └── itinerary-view.html
-│
+```text
+Odoo_GlobeTrotter/
+├── app.py                 # Main application entry point and route logic
+├── models.py              # Database models (User, Trip, Itinerary, Activity)
+├── instance/
+│   └── globetrotter.db    # SQLite database file
 ├── static/
-│ ├── css/
-│ ├── js/
-│ └── uploads/
-│
-└── globetrotter.db
+│   └── uploads/           # Directory for user-uploaded trip cover photos
+└── templates/
+    ├── index.html         # Landing page
+    ├── login.html         # User login page
+    ├── signup.html        # User registration page
+    ├── mytrip.html        # User dashboard (My Trips)
+    ├── create-trip.html   # Trip creation wizard
+    ├── itinerary-builder.html # Main tool for adding stops/activities
+    └── itinerary-view.html    # Final read-only view of the trip
 
+```
 
----
+## 🚀 Installation & Setup
 
-## ⚙️ Installation & Setup
+### 1. Clone the Repository
 
-### 1️⃣ Clone the repository
 ```bash
-git clone <your-repo-url>
-cd globetrotter
+git clone <repository-url>
+cd Odoo_GlobeTrotter
 
-2️⃣ Create virtual environment (recommended)
+```
+
+### 2. Set Up a Virtual Environment (Recommended)
+
+```bash
+# Windows
 python -m venv venv
-
-
-Activate it:
-
-Windows
-
 venv\Scripts\activate
 
-
-Mac / Linux
-
+# Mac/Linux
+python3 -m venv venv
 source venv/bin/activate
 
-3️⃣ Install dependencies
-pip install -r requirements.txt
+```
 
-🔑 API Configuration
+### 3. Install Dependencies
 
-Create an account at:
-👉 https://developers.amadeus.com
+You will need the following Python packages:
 
-Replace your API keys in app.py:
+```bash
+pip install flask flask-login flask-sqlalchemy amadeus
 
+```
+
+### 4. Configure API Keys
+
+Open `app.py` and locate the Amadeus configuration section. You will need to replace the client credentials with your own from [Amadeus for Developers](https://developers.amadeus.com/).
+
+```python
+# app.py
+
+# Replace these with your actual keys
 AMADEUS_CLIENT_ID = "YOUR_CLIENT_ID"
 AMADEUS_CLIENT_SECRET = "YOUR_CLIENT_SECRET"
 
+```
 
-(Optional but recommended: use environment variables instead.)
+### 5. Initialize the Database
 
-▶️ Run the Application
+The application is configured to automatically create the database tables if they don't exist when you run the app.
+
+### 6. Run the Application
+
+```bash
 python app.py
 
+```
 
-Then open:
+Visit `http://127.0.0.1:5000` in your browser.
 
-http://127.0.0.1:5000/
+## 📖 Usage Guide
 
-🔐 Authentication Flow
-
-New users → Signup
-
-Existing users → Login
-
-Unauthorized users are redirected to login
-
-Each user sees only their own trips
-
-💡 Future Enhancements
-
-Flight & hotel booking integration
-
-Map-based itinerary visualization
-
-AI-powered trip recommendations
-
-Export itinerary as PDF
-
-Email notifications & reminders
-
-Payment gateway integration
-
-🧑‍💻 Author
-
-GlobeTrotter Project
-Built for academic & hackathon use 🚀
-
-📜 License
-
-This project is for educational purposes only.
+1. **Sign Up**: Create a new account to start planning.
+2. **Create a Trip**: Click "Plan New Trip" or "New Trip" on the dashboard. Enter your destination, dates, and budget.
+3. **Build Itinerary**:
+* Use the **Sidebar** to add "Stops" (Cities).
+* Use the **Activity Modal** to add specific events to each stop (e.g., "Eiffel Tower Visit", Cost: $50).
 
 
+4. **Manage Budget**: As you add activities, the app automatically updates your "Actual Cost" vs "Target Budget" on the Itinerary View page.
+5. **Review**: Go to "Complete Trip" to see a timeline view of your entire journey.
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+## 📄 License
+
+This project is open-source and available for educational and personal use.
